@@ -1,4 +1,6 @@
 #include "utils.h"
+#include <stddef.h>
+
 GPIO_TypeDef *get_port_struct(char port){
   switch(port){
     case 'A':
@@ -12,6 +14,6 @@ GPIO_TypeDef *get_port_struct(char port){
     case 'F':
       return GPIOF;
     default:
-      return 0;
+      return NULL;
   }
 }

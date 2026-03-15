@@ -3,7 +3,7 @@
 
 #define MAX_PINS 15
 
-int clean_gpio_port(char port){
+static int clean_gpio_port(char port){
   // Calculate bit_push
   int bit_push = (int) (port - 'A');
 

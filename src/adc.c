@@ -23,7 +23,7 @@ void init_adc(char port, uint8_t pin){
 	ADC1->CR |= (1U << 28);
 
 	// Wait loop
-	for(unsigned int = 0; i < 100000; i++){};
+	for(volatile int i = 0; i < 100000; i++){};
 
 	// Start calibration
 	ADC1->CR |= (1U << 31);
