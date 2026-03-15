@@ -1,4 +1,7 @@
 #include "gpio.h"
+#include "utils.h"
+
+#define MAX_PINS 15
 
 int clean_gpio_port(char port){
   // Calculate bit_push
@@ -13,22 +16,6 @@ int clean_gpio_port(char port){
   return bit_push;
 }
 
-GPIO_TypeDef *get_port_struct(char port){
-  switch(port){
-    case 'A':
-      return GPIOA;
-    case 'B':
-      return GPIOB;
-    case 'C':
-      return GPIOC;
-    case 'D':
-      return GPIOD;
-    case 'F':
-      return GPIOF;
-    default:
-      return 0;
-  }
-}
 
 void init_gpio_clock(char port){
   int bit_push = clean_gpio_port(port);
@@ -38,11 +25,18 @@ void init_gpio_clock(char port){
     while(1){}; // Hard Fault
   }
 
+  // Activate GPIO port on RCC
   RCC->IOPENR |= (1U << bit_push);
 }
 
 void gpio_set_mode(char port, uint8_t pin, char mode){
+  // If port is not correct
   if(clean_gpio_port(port) == -1){
+    while(1){}; // Hard Fault
+  }
+
+  // If pin does not exist. This STM32 only counts with 16 pins.
+  if(pin > MAX_PINS){
     while(1){}; // Hard Fault
   }
 
@@ -58,10 +52,10 @@ void gpio_set_mode(char port, uint8_t pin, char mode){
     while(1){}; // Hard Fault
   }
 
-  // Analog: 11
-  // Alternate Function: 10
-  // Output: 01
-  // Input: 00
+  // Analog:              11
+  // Alternate Function:  10
+  // Output:              01
+  // Input:               00
   uint32_t val = 0U;
   if(mode == 'A'){
     val = 3U;
@@ -72,16 +66,14 @@ void gpio_set_mode(char port, uint8_t pin, char mode){
   };
 
 
+  // Move bits
   val = (val << (pin << 1));
-
 
   // Clean bits
   port_struct->MODER &= ~(3U << (pin << 1));
 
-  // Insert the value
+  // Insert the value into the MODER
   port_struct->MODER |= val;
-
-
 }
 
 
@@ -91,14 +83,21 @@ void gpio_write_pin(char port, int pin, char state){
   if(state != 'S' && state != 'R'){
     while(1){}; // Hard Fault
   } 
+
   // Clean Port
   if(clean_gpio_port(port) == -1){
+    while(1){}; // Hard Fault
+  }
+
+  // If pin does not exist.
+  if(pin > MAX_PINS){
     while(1){}; // Hard Fault
   }
 
   // Get pointer of the port we are setting the mode in
   GPIO_TypeDef *port_struct = get_port_struct(port);
 
+  // Set / Reset the pin
   if(state == 'S'){
     port_struct->BSRR = (1U << pin);
   } else if(state == 'R'){
